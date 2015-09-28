@@ -1,0 +1,155 @@
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+    <script>
+
+var myLatLng = {lat: parseFloat(getParameterByName("at")), lng: parseFloat(getParameterByName("on"))};
+var placeArr = [];
+var app = angular.module('myApp', ['slick']);
+app.controller('myCtrl', function($scope,$timeout) {
+    // $scope.firstName = locDetail;
+    $scope.placeArr = placeArr;
+    $scope.lastName = "Doe";
+    $scope.userCoor = myLatLng.lat + ',' + myLatLng.lng;
+    $scope.mapch = function(longlat){map.setCenter(longlat)};
+    $timeout(function(){
+      $scope.showArr= placeArr;
+}, 3000);
+  });
+
+// var map;
+var infoWindow;
+var service;
+
+// var userCoor =  { lat: parseFloat(getParameterByName("at")), lng: parseFloat(getParameterByName("on"))}
+// map.setCenter(userCoor);
+// // cons?ole.log(initialLocation);
+// // console.log(new GLatLng(initialLocation))
+// // console.log(initialLocation);
+// var marker = new google.maps.Marker({
+//         position: userCoor,
+//         // map: map
+//       })
+
+// if(navigator.geolocation) {
+//   browserSupportFlag = true;
+//   navigator.geolocation.getCurrentPosition(function(position) {
+//     initialLocation = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
+//     console.log(initialLocation)
+//     map.setCenter(initialLocation);
+//     var marker = new google.maps.Marker({
+//       position: initialLocation,
+//       map: map
+//     })
+//   }, function() {
+//     handleNoGeolocation(browserSupportFlag);
+//   });
+// }
+// // Browser doesn't support Geolocation
+// else {
+//   browserSupportFlag = false;
+//   handleNoGeolocation(browserSupportFlag);
+// }
+
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+function initMap() {
+  map = new google.maps.Map(document.getElementById('googlemaps'), {
+    center: myLatLng,
+    zoom: 16,
+    styles: [{
+      stylers: [{ visibility: 'simplified' }]
+    }, {
+      elementType: 'labels',
+      stylers: [{ visibility: 'off' }]
+    }]
+  });
+
+  marker = new google.maps.Marker({
+    position: myLatLng,
+    map: map
+  });
+
+
+  infoWindow = new google.maps.InfoWindow();
+  service = new google.maps.places.PlacesService(map);
+
+  // The idle event is a debounced event, so we can query & listen without
+  // throwing too many requests at the server.
+  map.addListener('idle', performSearch);
+}
+function performSearch() {
+  var request = {
+    bounds: map.getBounds(),
+    keyword: getParameterByName('query')
+  };
+  service.radarSearch(request, callback);
+}
+
+function callback(results, status) {
+  if (status !== google.maps.places.PlacesServiceStatus.OK) {
+    console.error(status);
+    return;
+  }
+  for (var i = 0, result; result = results[i]; i++) {
+    addMarker(result);
+  }
+}
+
+function addMarker(place) {
+  // console.log(place);
+  var marker = new google.maps.Marker({
+    map: map,
+    position: place.geometry.location,
+    icon: {
+      url: 'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png',
+    }
+  });
+  // alert(position);
+  
+  // google.maps.event.addListener(marker, 'click', function() {
+    service.getDetails(place, function(result, status) {
+	var locDetail = result;
+      if (status !== google.maps.places.PlacesServiceStatus.OK) {
+        console.error(status);
+        return;
+      }
+      // infoWindow.setContent(result.name);
+      placeArr.push(result);
+      // alert(placeArr);
+      // infoWindow.open(map, marker);
+
+    });
+  // });
+}
+
+    // </script>
+<div ng-app="myApp" ng-controller="myCtrl">
+<div id="googlemaps" style="width:auto;height:500px;overflow:auto;">The Postal Address Finder is powered by Google Maps. Loading..</div>
+<!-- 
+<ul rn-carousel class="image">
+  <li>slide #1</li>
+  <li>slide #2</li>
+  <li>slide #3</li>
+  </ul> -->
+<div class="row" style="z-index:100;top:-140px;postion:relative;opacity:.8">
+  <div class="col-sm-6 col-md-3" ng-repeat="show in showArr">
+      <div class="thumbnail" >
+        <div class="caption"><center>
+            <b >{{show.name}}</b><br>
+            <button ng-click="mapch(show.geometry.location)"></button>
+
+          <small>opens {{show.opening_hours.periods[0].open.hours}} to {{show.opening_hours.periods[0].close.hours}} </small><br>
+        <span class="glyphicon glyphicon glyphicon-phone" aria-hidden="true"></span>{{show.international_phone_number}}<br><br>
+            <a class="btn btn-primary" ng-href="https://www.google.com/maps/dir/{{userCoor}}/{{show.geometry.location.G}},{{show.geometry.location.K}}">Directions</a>
+            </center>
+        </div>
+      </div>
+    </div>
+</div>
+
+<script src="https://maps.googleapis.com/maps/api/js?callback=initMap&signed_in=true&libraries=places,visualization" async defer></script>
+         

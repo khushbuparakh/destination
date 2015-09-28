@@ -13,4 +13,9 @@
 //= require jquery
 //= require jquery_ujs
 //= require bootstrap-sprockets
-//= require_tree .
+//= require_tree
+//= require angular
+//= require angular-carousel
+//= require angular-touch
+//= require angular-slick
+//= require slick-carousel

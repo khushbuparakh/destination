@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  query_text: MyString
+  geoLat: 9.99
+  geoLan: 9.99
+
+two:
+  query_text: MyString
+  geoLat: 9.99
+  geoLan: 9.99
